@@ -1,0 +1,203 @@
+<html>
+	<head>
+		<script type="text/javascript" src="processing-0.9.7.js"></script>
+        <script src="init.js"></script>
+        <script type="text/javascript">
+</script>
+		<title>Canvas</title>
+	</head>
+	<body>
+
+
+        <script type="application/processing">
+
+/*           	     ellipseMode(CORNER);
+
+         fill(alphaMask);
+         ellipse(0, 0, wCur, hCur);
+         ellipseMask = get(0, 0, wCur, hCur);
+         fill(0);
+         ellipse(0, 0, wCur, hCur);*/
+
+        /*@pjs preload="http://localhost/noise.php";*/
+
+	    color alpha = color(0, 0, 0, 0);
+	    //color alphaMask = color(0, 0, 0, 0);
+
+        boolean mousePressed = false;
+        boolean bControl = false;
+        boolean bShift = false;
+        boolean firstDraw = true;
+		boolean saveImgState = true;
+
+		int width = 501, height = 501, wCur = 40, hCur = 40;
+		int xCur = wCur, yCur = hCur, tmpXCur = 0, tmpYCur = 0;
+        int alpha = 0;
+        int iCanc = 0, lastK = 0, i = iCanc, maxICanc = 0;
+
+     	PImage areaCur;
+    	PImage ellipseMask = createImage(wCur, hCur, RGB);
+        PImage tmpAreaCur;
+        PImage b;
+        PImage[] imgCanc = new PImage[20];
+        PImage alphaMask = createImage(50, 50, ARGB);
+
+       /*  shiftArray(array) {
+
+            array[0]
+        } */
+
+	    void setup() {
+ 		 String url = "noise.php";
+		 im = loadImage(url);
+	     //noLoop();
+	     size(width ,height);
+	     noStroke();
+	     background(0);
+         smooth();
+
+   	     areaCur = alpha;
+
+         fill(255);
+
+  	     background(255);
+         image(im, 0, 0);
+       }
+
+	   void draw() {
+
+       image(areaCur, xCur, yCur, wCur, hCur);
+        if (saveImgState == true) {
+            imgCanc[iCanc] = get(0, 0, width, height);
+            if ( iCanc > maxICanc ) { maxICanc = iCanc;}
+            i = iCanc;
+            iCanc++;
+
+            saveImgState = false;
+            println("save image " + maxICanc);
+        }
+
+         if (bShift == true) {
+                     wCur = round (abs (wCur - (mouseX - xCur + wCur + mouseY - yCur + hCur)/2));
+                     if (wCur > 50) { wCur = 50; }
+                         else { if (wCur < 5) { wCur = 5; } }
+
+                     hCur = wCur;
+
+                     areaCur = 0;
+                     tmpAreaCur = 0;
+         }
+        else
+        if (mousePressed){
+
+                    rect(tmpXCur, tmpYCur, wCur, hCur);
+
+        }
+
+
+
+        if (bControl == false && bShift == false) {
+		        tmpXCur = mouseX - wCur;
+		        tmpYCur = mouseY - hCur;
+		        if (tmpXCur < 0) { tmpXCur = 0; }
+		        if (tmpYCur < 0) { tmpYCur = 0; }
+		 }
+		 else {
+
+		     if (!(xCur == (mouseX - wCur)) /*&& (iCanc > 0)*/) {
+		         k = round ((xCur - ( mouseX - wCur )) / 30 );
+		         if (k != lastK) {
+                     if ( k < 0) {
+		        	   i = iCanc - k - 1;
+                     }
+                     else { if ( k > 0) {
+                           i = iCanc - k - 1;
+                       }
+                       else { i = iCanc; }
+                     }
+
+			         lastK = k;
+			         if (i < 0) i = 0;
+			         if (i > maxICanc) i = maxICanc;
+
+	                 image(imgCanc[i], 0, 0, width, height);
+                 }
+		     }
+        }
+
+        areaCur = get(tmpXCur, tmpYCur, wCur, hCur);
+        tmpAreaCur = get(tmpXCur, tmpYCur, wCur, hCur);
+        tmpAreaCur.filter(INVERT);
+        //tmpAreaCur.filter(THRESHOLD, .4);
+
+        //tmpAreaCur.blend(0, 0, wCur, hCur, 0, 0, wCur, hCur, SCREEN);
+        //tmpAreaCur.mask(ellipseMask);
+        //tmpAreaCur.mask(alphaMask);
+        if (firstDraw == false) image(tmpAreaCur, tmpXCur, tmpYCur, wCur, hCur);
+
+        xCur = tmpXCur;
+        yCur = tmpYCur;
+        }
+
+	   void mouseMoved()
+	   {
+			firstDraw = false;
+	   }
+	   void mouseReleased()
+	   {
+	        if (bControl == false) {
+              saveImgState = true;
+            }
+
+	   }
+
+	  void keyPressed() {
+	  if (key == 's') {
+        save('test.gif');
+	  }
+ 		if (key == CODED) {
+		    if (keyCode == CONTROL) {
+		      bControl = true;
+              saveImgState == false;
+              
+		    }
+      		if (keyCode == SHIFT) {
+		      bShift = true;
+              saveImgState == false;
+		    }
+		  }
+
+
+      }
+
+      void keyReleased() {
+ 		if (key == CODED) {
+		    if (keyCode == CONTROL) {
+		      bControl = false;
+              iCanc = i + 1;
+              lastK = 0;
+		    }
+           if (keyCode == SHIFT) {
+              bShift = false;
+           }
+		  }
+
+      }
+     function saveImage()
+     {
+         alert(1);
+         var oCanvas = document.getElementById("thecanvas"); 
+         var img = oCanvas.toDataURL("image/png");
+         img.save();
+         alert(2);        
+     }
+
+    </script>
+	<div id="dCanvas" style="float: left;">
+	  <canvas id='thecanvas' width="500" height="500"></canvas>
+	</div>
+	</br>
+   <button onclick='alert(1); saveImage(); '> 
+   </button>
+	</body>
+</html>
